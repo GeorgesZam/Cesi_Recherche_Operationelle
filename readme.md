@@ -2,18 +2,107 @@
 **Projet CesiCDP — Réponse à l'appel ADEME**
 
 Ce notebook regroupe :
-1. La **modélisation formelle** du problème
-2. L'**étude de complexité** (NP-complétude)
-3. Des **exemples de code Python** exécutables (vérificateur, force brute, Held-Karp, plus proche voisin, benchmark)
+1. Le **contexte ADEME** et la problématique algorithmique
+2. La **modélisation formelle** du problème
+3. L'**étude de complexité** (NP-complétude)
+4. Les **algorithmes de résolution** (force brute, Held-Karp, plus proche voisin)
+5. Un **benchmark** comparatif
+6. Les **contraintes supplémentaires** retenues (fenêtres temporelles + précédences)
 
 
 ---
-# 1. Modélisation formelle du problème
+# 1. Contexte et introduction
 
-## 1.1 Contexte
+## 2.1 Contexte environnemental et enjeux énergétiques
+
+Depuis les années 1990, la réduction de la consommation d'énergie et des émissions de gaz à effet de serre est devenue un enjeu mondial majeur. La signature du **Protocole de Kyoto en 1997**, entré en vigueur en 2005, constitue l'un des premiers engagements internationaux visant à limiter le réchauffement climatique en imposant aux pays signataires une réduction des émissions de GES.
+
+De nombreux scientifiques ont cependant estimé que ces efforts restaient insuffisants. De nouvelles politiques environnementales ont depuis été mises en place, notamment en Europe et en France, avec des objectifs ambitieux tels que la **division par quatre des émissions de GES à l'horizon 2050**.
+
+Dans ce contexte, les politiques publiques encouragent le développement de solutions permettant de :
+- réduire la consommation énergétique,
+- optimiser l'utilisation des ressources,
+- améliorer les systèmes de transport et de logistique.
+
+Les transports représentent une part importante des émissions de CO₂. **L'optimisation des déplacements** constitue donc un levier essentiel pour réduire l'impact environnemental des activités économiques.
+
+## 1.2 L'appel à projets de l'ADEME
+
+L'**ADEME** (Agence de l'environnement et de la maîtrise de l'énergie) a lancé un appel à manifestation d'intérêt visant à promouvoir le développement de solutions innovantes de mobilité. Cet appel cible notamment :
+- la mobilité des personnes,
+- la logistique du transport de marchandises,
+- l'efficacité énergétique des déplacements.
+
+Les projets soutenus doivent proposer des solutions technologiques permettant de réduire les déplacements inutiles et d'optimiser les trajets réalisés par les véhicules.
+
+Notre entreprise **CesiCDP**, spécialisée dans les problématiques de mobilité intelligente et de logistique algorithmique, participe à cet appel à projets en proposant une étude portant sur **l'optimisation des tournées de livraison dans un réseau routier**.
+
+L'objectif principal est de développer des outils algorithmiques capables de déterminer les itinéraires les plus efficaces afin de :
+- réduire la distance parcourue,
+- diminuer la consommation de carburant,
+- limiter l'impact environnemental des transports.
+
+## 1.3 Lien avec les projets de villes intelligentes
+
+Ce projet s'inscrit également dans une démarche plus large liée au développement des **villes intelligentes** (*Smart Cities*).
+
+Dans la **région Grand Est**, des projets de modernisation des infrastructures urbaines sont en cours : équipement des lampadaires, déploiement de capteurs urbains, mise en place de réseaux intelligents. Les équipes techniques chargées de ces installations doivent intervenir dans de nombreuses villes pour installer des équipements, effectuer des opérations de maintenance et collecter des données.
+
+Ces interventions nécessitent des **tournées optimisées** afin de :
+- réduire les coûts opérationnels,
+- diminuer la consommation énergétique,
+- améliorer l'efficacité globale des opérations.
+
+## 1.4 Problématique algorithmique
+
+### Modélisation par la théorie des graphes
+
+Pour étudier ce problème de manière rigoureuse, on le formalise à l'aide de la **théorie des graphes**, cadre particulièrement adapté aux réseaux de transport :
+
+- chaque **ville** est modélisée par un **sommet** du graphe,
+- chaque **route** reliant deux villes est représentée par une **arête**,
+- un **poids** est associé à chaque arête (distance, temps de trajet, coût énergétique).
+
+Le réseau routier devient ainsi un **graphe pondéré**, et le problème consiste à déterminer un parcours qui :
+1. part d'une ville donnée,
+2. visite un ensemble de villes,
+3. revient à la ville de départ,
+4. minimise la distance totale parcourue.
+
+### Problèmes eulériens vs hamiltoniens
+
+Deux types de problèmes de parcours sont classiquement étudiés en théorie des graphes :
+
+| | **Problème eulérien** | **Problème hamiltonien** |
+|---|---|---|
+| **Définition** | Passer une fois par chaque **arête** | Passer une fois par chaque **sommet** |
+| **Origine** | Euler, *Sept ponts de Königsberg* (XVIIIᵉ siècle) | — |
+| **Complexité** | **Classe P** (résolution polynomiale) | **NP-complet** |
+
+**Pourquoi notre problème est hamiltonien et non eulérien** : on ne cherche pas à parcourir toutes les routes du réseau, mais à **visiter chaque ville (client) exactement une fois**. Le critère porte sur les **sommets**, pas sur les **arêtes**. Cette distinction est fondamentale car elle fait basculer le problème de la classe P (facile) vers la classe NP-complet (difficile).
+
+### Le problème du voyageur de commerce (TSP)
+
+La problématique étudiée correspond précisément au célèbre **Problème du Voyageur de Commerce** (*Travelling Salesman Problem*, TSP) :
+
+> Un vendeur doit visiter plusieurs villes, chaque ville exactement une fois, et revenir à son point de départ. L'objectif est de minimiser la distance totale parcourue.
+
+C'est un cas particulier de problème hamiltonien et l'un des problèmes d'optimisation combinatoire les plus étudiés en informatique et en recherche opérationnelle. Sa complexité théorique est **NP-complète**, ce qui signifie que le temps de calcul nécessaire pour trouver la solution optimale augmente très rapidement avec le nombre de villes.
+
+C'est pourquoi, en pratique, on utilise :
+- des **algorithmes exacts** pour les petites instances (n < 20),
+- des **heuristiques** et **métaheuristiques** pour les grandes instances.
+
+La suite du notebook formalise cette modélisation, démontre la NP-complétude du TSP, étudie les algorithmes de résolution et présente les contraintes supplémentaires retenues pour le contexte ADEME.
+
+
+---
+# 2. Modélisation formelle du problème
+
+## 2.1 Contexte
 Dans le cadre de l'appel à projet ADEME, l'objectif est d'optimiser les tournées de livraison afin de **réduire les déplacements et la consommation énergétique des véhicules**.
 
-## 1.2 Définition du graphe
+## 2.2 Définition du graphe
 Le problème est modélisé par un graphe pondéré :
 $$G = (V, E, w)$$
 
@@ -23,22 +112,22 @@ $$G = (V, E, w)$$
 
 On note $V = \{v_0, v_1, \dots, v_n\}$ où $v_0$ est le dépôt.
 
-## 1.3 Graphe complet et hypothèse
+## 2.3 Graphe complet et hypothèse
 On considère un **graphe complet** : chaque arête représente le **plus court chemin réel** entre deux villes via le réseau routier.
 
-## 1.4 Propriété métrique
+## 2.4 Propriété métrique
 Le TSP étudié est **métrique** :
 - Positivité : $w(i,j) \geq 0$
 - Symétrie : $w(i,j) = w(j,i)$
 - Inégalité triangulaire : $w(i,k) \leq w(i,j) + w(j,k)$
 
-## 1.5 Fonction objectif
+## 2.5 Fonction objectif
 On cherche une **tournée hamiltonienne minimale**. Si $\pi$ est une permutation des sommets :
 $$C(\pi) = \sum_{k=0}^{n-1} w(\pi_k, \pi_{k+1}) + w(\pi_n, \pi_0)$$
 
 Le problème : $\min_{\pi} C(\pi)$
 
-## 1.6 Représentation en mémoire
+## 2.6 Représentation en mémoire
 On utilise une **matrice d'adjacence pondérée** $M[i][j] = w(v_i, v_j)$ : accès en $O(1)$, adapté aux graphes denses.
 
 
@@ -101,9 +190,9 @@ print(f"Inégalité triangulaire respectée : {ok}")
 
 
 ---
-# 2. Étude de complexité
+# 3. Étude de complexité
 
-## 2.1 Problème de décision vs problème d'optimisation
+## 3.1 Problème de décision vs problème d'optimisation
 
 | Version | Question |
 |---|---|
@@ -115,7 +204,7 @@ La théorie de la complexité (P, NP, NP-complet) est définie pour les **probl�
 - Si TSP-OPT se résout en temps polynomial → TSP-DEC aussi
 - Si TSP-DEC est NP-complet → TSP-OPT est **NP-difficile**
 
-## 2.2 TSP-DEC ∈ NP
+## 3.2 TSP-DEC ∈ NP
 
 **Certificat** : une permutation $\pi$ des $n+1$ sommets.
 
@@ -156,7 +245,7 @@ print(f"Coût = {cout:.2f}, valide (<= 400) ? {valide}")
     Coût = 570.03, valide (<= 400) ? False
 
 
-## 2.3 NP-complétude par réduction depuis HAM-CYCLE
+## 3.3 NP-complétude par réduction depuis HAM-CYCLE
 
 **HAM-CYCLE** (NP-complet, Karp 1972) : *G admet-il un cycle hamiltonien ?*
 
@@ -256,9 +345,9 @@ print(f"=> Le graphe original possède bien un cycle hamiltonien.")
 
 
 ---
-# 3. Algorithmes de résolution
+# 4. Algorithmes de résolution
 
-## 3.1 Force brute — $O(n!)$
+## 4.1 Force brute — $O(n!)$
 Énumère toutes les permutations. Praticable jusqu'à $n \approx 10$.
 
 
@@ -289,7 +378,7 @@ print(f"Coût optimal : {cout_opt:.2f}")
     Coût optimal : 277.23
 
 
-## 3.2 Held-Karp (programmation dynamique) — $O(n^2 \cdot 2^n)$
+## 4.2 Held-Karp (programmation dynamique) — $O(n^2 \cdot 2^n)$
 Bien plus rapide que la force brute, praticable jusqu'à $n \approx 20$.
 
 État : `dp[S][i]` = coût minimal pour partir de 0, visiter exactement les sommets de $S$ et finir en $i$.
@@ -362,7 +451,7 @@ print(f"Cohérent avec force brute : {abs(cout_hk - cout_opt) < 1e-9}")
     Cohérent avec force brute : True
 
 
-## 3.3 Heuristique du plus proche voisin — $O(n^2)$
+## 4.3 Heuristique du plus proche voisin — $O(n^2)$
 Rapide mais sans garantie. Sert souvent de point de départ pour des métaheuristiques.
 
 
@@ -402,7 +491,7 @@ print(f"Ratio PPV/OPT : {ratio:.3f}  (1.0 = optimal)")
 
 
 ---
-# 4. Benchmark : illustration de l'explosion combinatoire
+# 5. Benchmark : illustration de l'explosion combinatoire
 
 On mesure le temps d'exécution de chaque algorithme pour $n$ croissant.
 
@@ -433,14 +522,18 @@ for n in tailles:
     print(f"n={n:2d}  FB={t_fb*1000:8.2f} ms   HK={t_hk*1000:8.2f} ms   PPV={t_ppv*1000:8.4f} ms")
 ```
 
-    n= 5  FB=    0.04 ms   HK=    0.06 ms   PPV=  0.0084 ms
-    n= 6  FB=    0.20 ms   HK=    0.13 ms   PPV=  0.0085 ms
-    n= 7  FB=    1.03 ms   HK=    0.35 ms   PPV=  0.0100 ms
-    n= 8  FB=    7.88 ms   HK=    1.08 ms   PPV=  0.0192 ms
-    n= 9  FB=   83.84 ms   HK=    3.38 ms   PPV=  0.0185 ms
+    n= 5  FB=    0.06 ms   HK=    0.08 ms   PPV=  0.0107 ms
+    n= 6  FB=    0.17 ms   HK=    0.17 ms   PPV=  0.0157 ms
+    n= 7  FB=    1.13 ms   HK=    0.38 ms   PPV=  0.0108 ms
+    n= 8  FB=    8.57 ms   HK=    0.98 ms   PPV=  0.0136 ms
 
 
-    n=10  FB=  740.96 ms   HK=    6.28 ms   PPV=  0.0244 ms
+    n= 9  FB=  112.28 ms   HK=    3.20 ms   PPV=  0.0174 ms
+
+    
+
+
+    n=10  FB=  785.36 ms   HK=    6.93 ms   PPV=  0.0207 ms
 
 
 
@@ -466,7 +559,7 @@ plt.show()
 
 
     
-![png](TSP_modelisation_complexite_files/TSP_modelisation_complexite_21_0.png)
+![png](TSP_modelisation_complexite_files/TSP_modelisation_complexite_22_0.png)
     
 
 
@@ -496,16 +589,16 @@ plt.show()
 
 
     
-![png](TSP_modelisation_complexite_files/TSP_modelisation_complexite_22_0.png)
+![png](TSP_modelisation_complexite_files/TSP_modelisation_complexite_23_0.png)
     
 
 
 ---
-# 5. Contraintes supplémentaires
+# 6. Contraintes supplémentaires
 
 Le TSP métrique de base est une bonne approximation, mais le contexte ADEME (livraisons réelles) impose deux contraintes supplémentaires que nous formalisons ici.
 
-## 5.1 Fenêtres temporelles (Time Windows)
+## 6.1 Fenêtres temporelles (Time Windows)
 
 ### Motivation
 Chaque ville $v_i$ a un créneau de livraison imposé par le client (ex : 8h–10h). Le véhicule doit arriver dans ce créneau, sinon la livraison échoue.
@@ -588,7 +681,7 @@ print(f"Faisable ? {ok} — {raison}")
     Faisable ? True — OK
 
 
-## 5.2 Dépendances entre visites (contraintes de précédence)
+## 6.2 Dépendances entre visites (contraintes de précédence)
 
 ### Motivation
 Certaines livraisons doivent **précéder** d'autres opérations. Exemple typique : un colis doit être **livré** chez un client avant qu'on aille **collecter** sa signature ou un retour ailleurs. Plus généralement, on modélise des chaînes pickup-and-delivery.
@@ -679,7 +772,7 @@ print(f"\nP_cycle forme un DAG ? {precedences_forment_dag(P_cycle, 5)}")
     P_cycle forme un DAG ? False
 
 
-## 5.3 Modèle complet
+## 6.3 Modèle complet
 
 En combinant les deux contraintes, le problème devient :
 
@@ -761,7 +854,7 @@ for cle, val in rapport.items():
 
 
 ---
-# 6. Conclusion
+# 7. Conclusion
 
 | Problème | Classe | Justification |
 |---|---|---|
@@ -779,4 +872,3 @@ for cle, val in rapport.items():
 2. Held, M., & Karp, R. M. (1962). *A dynamic programming approach to sequencing problems*.
 3. Christofides, N. (1976). *Worst-case analysis of a new heuristic for the TSP*.
 4. Cormen, Leiserson, Rivest, Stein (2009). *Introduction to Algorithms*, ch. 34-35.
-
